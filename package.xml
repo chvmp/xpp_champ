@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+
+<package format="2">
+  <name>xpp_champ</name>
+  <version>1.0.10</version>
+  <description>
+    Champ XPP
+  </description>
+  
+  <author>Alexander W. Winkler</author>
+  <author>Juan Jimeno</author>
+  <maintainer email="jimenojmm@gmail.com">Juan Jimeno</maintainer>
+
+  <license>BSD</license>  
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>xacro</depend>
+  <depend>roscpp</depend>
+  <depend>xpp_vis</depend>
+</package>

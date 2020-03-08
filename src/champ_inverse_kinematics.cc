@@ -41,8 +41,11 @@ namespace xpp {
 ChamplegInverseKinematics::Vector3d
 ChamplegInverseKinematics::GetJointAngles (int leg_id, const Vector3d& ee_pos_B, KneeBend bend) const
 {
-  double q_HAA_bf, q_HAA_br, q_HFE_br; // rear bend of knees
-  double q_HFE_bf, q_KFE_br, q_KFE_bf; // forward bend of knees
+//   double hip_joint, q_HAA_br, q_HFE_br; // rear bend of knees
+//   double q_HFE_bf, q_KFE_br, q_KFE_bf; // forward bend of knees
+  double hip_joint;
+  double upper_leg_joint;
+  double lower_leg_joint;
   double HAA_to_HFE;
 
   Eigen::Vector3d xr;
@@ -51,20 +54,25 @@ ChamplegInverseKinematics::GetJointAngles (int leg_id, const Vector3d& ee_pos_B,
   HAA_to_HFE = hfe_to_haa_z[Z];
   xr = ee_pos_B;
 
-
   if(leg_id == 1 || leg_id ==3)
     HAA_to_HFE = -HAA_to_HFE;
 
-  q_HAA_bf = q_HAA_br = -(atan(xr[Z] / xr[X]) - (1.5708 - acos(HAA_to_HFE / sqrt(pow(xr[Z], 2) + pow(xr[X], 2)))));;
-  R <<  cos(q_HAA_bf), 0, sin(q_HAA_bf), 0, 1, 0, -sin(q_HAA_bf), 0, cos(q_HAA_bf);
+  hip_joint = -(atan(xr[Y] / xr[Z]) - (1.5708 - acos(-HAA_to_HFE / sqrt(pow(xr[Y], 2) + pow(xr[Z], 2)))));;
+  R << 1, 0, 0, 0, cos(-hip_joint), -sin(-hip_joint), 0, sin(-hip_joint), cos(-hip_joint);
   xr = (R * xr).eval();
-  
-  q_KFE_bf = q_KFE_br = -acos((pow(xr[X], 2) + pow(xr[Y], 2) - pow(length_thigh ,2) - pow(length_shank ,2)) / (2 * length_thigh * length_shank));
-  q_HFE_bf = q_HFE_br = (atan(xr[Y] / xr[X]) - atan( (length_shank * sin(q_KFE_bf)) / (length_thigh + (length_shank * cos(q_KFE_bf)))));
+
+  int knee_direction;
+  if (bend==Forward)
+    knee_direction = -1;
+  else // backward
+    knee_direction = 1;
+
+  lower_leg_joint = knee_direction * acos((pow(xr[Z], 2) + pow(xr[X], 2) - pow(length_thigh ,2) - pow(length_shank ,2)) / (2 * length_thigh * length_shank));
+  upper_leg_joint = (atan(xr[X] / xr[Z]) - atan( (length_shank * sin(lower_leg_joint)) / (length_thigh + (length_shank * cos(lower_leg_joint)))));
 
 
 //   // forward knee bend
-//   EnforceLimits(q_HAA_bf, HAA);
+//   EnforceLimits(hip_joint, HAA);
 //   EnforceLimits(q_HFE_bf, HFE);
 //   EnforceLimits(q_KFE_bf, KFE);
 
@@ -74,9 +82,10 @@ ChamplegInverseKinematics::GetJointAngles (int leg_id, const Vector3d& ee_pos_B,
 //   EnforceLimits(q_KFE_br, KFE);
 
 //   if (bend==Forward)
-//     return Vector3d(q_HAA_bf, -q_HFE_bf, -q_KFE_bf);
+//     return Vector3d(hip_joint, q_HFE_bf, q_KFE_bf);
 //   else // backward
-    return Vector3d(q_HAA_br, q_HFE_br, q_KFE_br);
+//     return Vector3d(q_HAA_br, q_HFE_br, q_KFE_br);
+    return Vector3d(hip_joint, upper_leg_joint, lower_leg_joint);
 }
 
 void

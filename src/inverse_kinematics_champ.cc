@@ -53,7 +53,7 @@ InverseKinematicsChamp::GetAllJointAngles(const EndeffectorsPos& x_B) const
 
   for (int ee=0; ee<pos_B.size(); ++ee) {
 
-    ChamplegInverseKinematics::KneeBend bend = ChamplegInverseKinematics::Backward;
+    ChamplegInverseKinematics::KneeBend bend = ChamplegInverseKinematics::Forward;
     double temp_x;
     double temp_y;
     double temp_z;
@@ -71,20 +71,20 @@ InverseKinematicsChamp::GetAllJointAngles(const EndeffectorsPos& x_B) const
       case LH:
         ee_pos_H = pos_B.at(ee);
         hip_pos = base2hip_LF_.cwiseProduct(Eigen::Vector3d(-1,1,1));
-        bend = ChamplegInverseKinematics::Backward;
+        // bend = ChamplegInverseKinematics::Backward;
         break;
       case RH:
         ee_pos_H = pos_B.at(ee);
         hip_pos = base2hip_LF_.cwiseProduct(Eigen::Vector3d(-1,-1,1));
-        bend = ChamplegInverseKinematics::Backward;
+        // bend = ChamplegInverseKinematics::Backward;
         break;
       default: // joint angles for this foot do not exist
         break;
     }
 
-    temp_x = -ee_pos_H[Z];
-    temp_y = hip_pos[X] - ee_pos_H[X];
-    temp_z = ee_pos_H[Y] - hip_pos[Y];
+    temp_x = ee_pos_H[X] - hip_pos[X];
+    temp_y = ee_pos_H[Y] - hip_pos[Y];
+    temp_z = ee_pos_H[Z];
 
     ee_pos_H << temp_x, temp_y, temp_z;
     q_vec.push_back(leg.GetJointAngles(ee, ee_pos_H, bend));

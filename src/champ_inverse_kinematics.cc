@@ -41,8 +41,6 @@ namespace xpp {
 ChamplegInverseKinematics::Vector3d
 ChamplegInverseKinematics::GetJointAngles (int leg_id, const Vector3d& ee_pos_B, KneeBend bend) const
 {
-//   double hip_joint, q_HAA_br, q_HFE_br; // rear bend of knees
-//   double q_HFE_bf, q_KFE_br, q_KFE_bf; // forward bend of knees
   double hip_joint;
   double upper_leg_joint;
   double lower_leg_joint;
@@ -70,36 +68,25 @@ ChamplegInverseKinematics::GetJointAngles (int leg_id, const Vector3d& ee_pos_B,
   lower_leg_joint = knee_direction * acos((pow(xr[Z], 2) + pow(xr[X], 2) - pow(length_thigh ,2) - pow(length_shank ,2)) / (2 * length_thigh * length_shank));
   upper_leg_joint = (atan(xr[X] / xr[Z]) - atan( (length_shank * sin(lower_leg_joint)) / (length_thigh + (length_shank * cos(lower_leg_joint)))));
 
+  EnforceLimits(hip_joint, HAA);
+  EnforceLimits(upper_leg_joint, HFE);
+  EnforceLimits(upper_leg_joint, KFE);
 
-//   // forward knee bend
-//   EnforceLimits(hip_joint, HAA);
-//   EnforceLimits(q_HFE_bf, HFE);
-//   EnforceLimits(q_KFE_bf, KFE);
-
-//   // backward knee bend
-//   EnforceLimits(q_HAA_br, HAA);
-//   EnforceLimits(q_HFE_br, HFE);
-//   EnforceLimits(q_KFE_br, KFE);
-
-//   if (bend==Forward)
-//     return Vector3d(hip_joint, q_HFE_bf, q_KFE_bf);
-//   else // backward
-//     return Vector3d(q_HAA_br, q_HFE_br, q_KFE_br);
-    return Vector3d(hip_joint, upper_leg_joint, lower_leg_joint);
+  return Vector3d(hip_joint, upper_leg_joint, lower_leg_joint);
 }
 
 void
 ChamplegInverseKinematics::EnforceLimits (double& val, ChampJointID joint) const
 {
   // totally exaggerated joint angle limits
-  const static double haa_min = -180;
+  const static double haa_min = -90;
   const static double haa_max =  90;
 
   const static double hfe_min = -90;
   const static double hfe_max =  90;
 
-  const static double kfe_min = -180;
-  const static double kfe_max =  0;
+  const static double kfe_min = -90;
+  const static double kfe_max =  90;
 
   // reduced joint angles for optimization
   static const std::map<ChampJointID, double> max_range {
